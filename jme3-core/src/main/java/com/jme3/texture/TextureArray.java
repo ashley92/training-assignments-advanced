@@ -126,25 +126,6 @@ public class TextureArray extends Texture {
     }
 
     @Override
-    public void setWrap(WrapAxis axis, WrapMode mode) {
-        if (mode == null) {
-            throw new IllegalArgumentException("mode can not be null.");
-        } else if (axis == null) {
-            throw new IllegalArgumentException("axis can not be null.");
-        }
-        switch (axis) {
-            case S:
-                this.wrapS = mode;
-                break;
-            case T:
-                this.wrapT = mode;
-                break;
-            default:
-                throw new IllegalArgumentException("Not applicable for 2D textures");
-        }
-    }
-
-    @Override
     public void setWrap(WrapMode mode) {
         if (mode == null) {
             throw new IllegalArgumentException("mode can not be null.");

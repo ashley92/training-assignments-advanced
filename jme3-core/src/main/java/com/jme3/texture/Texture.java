@@ -36,6 +36,8 @@ import com.jme3.asset.AssetNotFoundException;
 import com.jme3.asset.CloneableSmartAsset;
 import com.jme3.asset.TextureKey;
 import com.jme3.export.*;
+import com.jme3.texture.Texture.WrapAxis;
+import com.jme3.texture.Texture.WrapMode;
 import com.jme3.util.PlaceholderAssets;
 import java.io.IOException;
 import java.util.logging.Level;
@@ -57,7 +59,10 @@ import java.util.logging.Logger;
  * @version $Id: Texture.java 4131 2009-03-19 20:15:28Z blaine.dev $
  */
 public abstract class Texture implements CloneableSmartAsset, Savable, Cloneable {
-
+	private WrapMode wrapS = WrapMode.EdgeClamp;
+    private WrapMode wrapT = WrapMode.EdgeClamp;
+    private WrapMode wrapR = WrapMode.EdgeClamp;
+    
     public enum Type {
 
         /**
@@ -450,8 +455,26 @@ public abstract class Texture implements CloneableSmartAsset, Savable, Cloneable
      * @throws IllegalArgumentException
      *             if axis or mode are null or invalid for this type of texture
      */
-    public abstract void setWrap(WrapAxis axis, WrapMode mode);
-
+    public void setWrap(WrapAxis axis, WrapMode mode) {
+        if (mode == null) {
+            throw new IllegalArgumentException("mode can not be null.");
+        } else if (axis == null) {
+            throw new IllegalArgumentException("axis can not be null.");
+        }
+        switch (axis) {
+            case S:
+                this.wrapS = mode;
+                break;
+            case T:
+                this.wrapT = mode;
+                break;
+            case R:
+            	this.wrapR = mode;
+            	break;
+            default:
+                throw new IllegalArgumentException("Not applicable for 2D textures");
+        }
+    }
     /**
      * <code>setWrap</code> sets the wrap mode of this texture for all axis.
      *
