@@ -29,40 +29,48 @@
  * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package com.jme3.animation;
+package com.jme3.animation.tracks;
 
-import com.jme3.scene.Spatial;
-import com.jme3.util.clone.JmeCloneable;
+import com.jme3.animation.AnimChannel;
+import com.jme3.animation.AnimControl;
+import com.jme3.export.Savable;
+import com.jme3.util.TempVars;
 
-/**
- * An interface that allow to clone a Track for a given Spatial.
- * The spatial fed to the method is the Spatial holding the AnimControl controlling the Animation using this track.
- * 
- * Implement this interface only if you make your own Savable Track and that the track has a direct reference to a Spatial in the scene graph.
- * This Spatial is assumed to be a child of the spatial holding the AnimControl.
- *  
- *
- * @author Nehon
- */
-public interface ClonableTrack extends Track, JmeCloneable {
+public interface Track extends Savable, Cloneable {
 
     /**
-     * Allows to clone the track for a given Spatial.
-     * The spatial fed to the method is the Spatial holding the AnimControl controlling the Animation using this track.
-     * This method will be called during the loading process of a j3o model by the assetManager.
-     * The assetManager keeps the original model in cache and returns a clone of the model.
+     * Sets the time of the animation.
      * 
-     * This method purpose is to find the cloned reference of the original spatial which it refers to in the cloned model.
+     * Internally, the track will retrieve objects from the control
+     * and modify them according to the properties of the channel and the
+     * given parameters.
      * 
-     * See EffectTrack for a proper implementation.
-     * 
-     * @param spatial the spatial holding the AnimControl
-     * @return  the cloned Track
+     * @param time The time in the animation
+     * @param weight The weight from 0 to 1 on how much to apply the track 
+     * @param control The control which the track should effect
+     * @param channel The channel which the track should effect
      */
-    public Track cloneForSpatial(Spatial spatial);
+    public void setTime(float time, float weight, AnimControl control, AnimChannel channel, TempVars vars);
+
+    /**
+     * @return the length of the track
+     */
+    public float getLength();
+
+    /**
+     * This method creates a clone of the current object.
+     * @return a clone of the current object
+     */
+    public Track clone();
     
     /**
-     * Method responsible of cleaning UserData on referenced Spatials when the Track is deleted
+     * Get the times in seconds for all keyframes.
+     * 
+     * All keyframe times should be between 0.0 and {@link #getLength() length}.
+     * Modifying the provided array is not allowed, as it may corrupt internal
+     * state.
+     * 
+     * @return the keyframe times
      */
-    public void cleanUp();
+    public float[] getKeyFrameTimes();
 }

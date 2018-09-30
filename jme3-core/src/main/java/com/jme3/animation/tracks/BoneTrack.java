@@ -29,8 +29,13 @@
  * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package com.jme3.animation;
+package com.jme3.animation.tracks;
 
+import com.jme3.animation.AnimChannel;
+import com.jme3.animation.AnimControl;
+import com.jme3.animation.CompactQuaternionArray;
+import com.jme3.animation.CompactVector3Array;
+import com.jme3.animation.movement.Bone;
 import com.jme3.export.*;
 import com.jme3.math.Quaternion;
 import com.jme3.math.Vector3f;

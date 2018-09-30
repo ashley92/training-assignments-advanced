@@ -29,7 +29,7 @@
  * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package com.jme3.animation;
+package com.jme3.animation.movement;
 
 import com.jme3.export.*;
 import com.jme3.math.*;
@@ -720,7 +720,7 @@ public final class Bone implements Savable, JmeCloneable {
      * @param weight The weight of the transform to apply. Set to 1.0 to prevent
      * any other transform from being applied until updateModelTransforms().
      */
-    void blendAnimTransforms(Vector3f translation, Quaternion rotation, Vector3f scale, float weight) {
+    public void blendAnimTransforms(Vector3f translation, Quaternion rotation, Vector3f scale, float weight) {
         if (userControl) {
             return;
         }

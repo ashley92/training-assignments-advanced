@@ -34,8 +34,8 @@ package com.jme3.scene.debug;
 import java.nio.FloatBuffer;
 import java.util.Map;
 
-import com.jme3.animation.Bone;
-import com.jme3.animation.Skeleton;
+import com.jme3.animation.movement.Bone;
+import com.jme3.animation.movement.Skeleton;
 import com.jme3.math.Vector3f;
 import com.jme3.scene.Mesh;
 import com.jme3.scene.VertexBuffer;

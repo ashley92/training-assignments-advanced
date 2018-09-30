@@ -187,17 +187,6 @@ public class Dome extends Mesh {
 
         int vertCount = ((planes - 1) * (radialSamples + 1)) + 1;
 
-        // Allocate vertices, allocating one extra in each radial to get the
-        // correct texture coordinates
-//        setVertexCount();
-//        setVertexBuffer(createVector3Buffer(getVertexCount()));
-
-        // allocate normals
-//        setNormalBuffer(createVector3Buffer(getVertexCount()));
-
-        // allocate texture coordinates
-//        getTextureCoords().set(0, new TexCoords(createVector2Buffer(getVertexCount())));
-
         FloatBuffer vb = BufferUtils.createVector3Buffer(vertCount);
         FloatBuffer nb = BufferUtils.createVector3Buffer(vertCount);
         FloatBuffer tb = BufferUtils.createVector2Buffer(vertCount);
@@ -224,45 +213,9 @@ public class Dome extends Mesh {
         Vector3f tempVb = vars.vect2;
         Vector3f tempVa = vars.vect1;
 
-        // generate the dome itself
-        int i = 0;
-        for (int iY = 0; iY < (planes - 1); iY++, i++) {
-            float fYFraction = fYFactor * iY; // in (0,1)
-            float fY = radius * fYFraction;
-            // compute center of slice
-            Vector3f kSliceCenter = tempVb.set(center);
-            kSliceCenter.y += fY;
-
-            // compute radius of slice
-            float fSliceRadius = FastMath.sqrt(FastMath.abs(radius * radius - fY * fY));
-
-            // compute slice vertices
-            Vector3f kNormal;
-            int iSave = i;
-            for (int iR = 0; iR < radialSamples; iR++, i++) {
-                float fRadialFraction = iR * fInvRS; // in [0,1)
-                Vector3f kRadial = tempVc.set(afCos[iR], 0, afSin[iR]);
-                kRadial.mult(fSliceRadius, tempVa);
-                vb.put(kSliceCenter.x + tempVa.x).put(
-                        kSliceCenter.y + tempVa.y).put(
-                        kSliceCenter.z + tempVa.z);
-
-                BufferUtils.populateFromBuffer(tempVa, vb, i);
-                kNormal = tempVa.subtractLocal(center);
-                kNormal.normalizeLocal();
-                if (!insideView) {
-                    nb.put(kNormal.x).put(kNormal.y).put(kNormal.z);
-                } else {
-                    nb.put(-kNormal.x).put(-kNormal.y).put(-kNormal.z);
-                }
-
-                tb.put(fRadialFraction).put(fYFraction);
-            }
-            BufferUtils.copyInternalVector3(vb, iSave, i);
-            BufferUtils.copyInternalVector3(nb, iSave, i);
-            tb.put(1.0f).put(fYFraction);
-        }
-
+        generateDome(center, planes, radialSamples, radius, insideView, vb, nb, tb, fInvRS, fYFactor, afSin, afCos,
+				tempVc, tempVb, tempVa);
+        
         vars.release();
 
         // pole
@@ -270,9 +223,7 @@ public class Dome extends Mesh {
         nb.put(0).put(insideView ? -1 : 1).put(0);
         tb.put(0.5f).put(1.0f);
 
-        // allocate connectivity
-        int triCount = (planes - 2) * radialSamples * 2 + radialSamples;
-        ShortBuffer ib = BufferUtils.createShortBuffer(3 * triCount);
+        ShortBuffer ib = allocateConnectivity(planes, radialSamples);
         setBuffer(Type.Index, 3, ib);
 
         // generate connectivity
@@ -283,24 +234,24 @@ public class Dome extends Mesh {
             int topPlaneStart = (plane * (radialSamples + 1));
             for (int sample = 0; sample < radialSamples; sample++, index += 6) {
                 if (insideView){
-                    ib.put((short) (bottomPlaneStart + sample));
-                    ib.put((short) (bottomPlaneStart + sample + 1));
-                    ib.put((short) (topPlaneStart + sample));
-                    ib.put((short) (bottomPlaneStart + sample + 1));
-                    ib.put((short) (topPlaneStart + sample + 1));
-                    ib.put((short) (topPlaneStart + sample));
+                    generatePlanesInsideView(ib, bottomPlaneStart, topPlaneStart, sample);
                 }else{
-                    ib.put((short) (bottomPlaneStart + sample));
-                    ib.put((short) (topPlaneStart + sample));
-                    ib.put((short) (bottomPlaneStart + sample + 1));
-                    ib.put((short) (bottomPlaneStart + sample + 1));
-                    ib.put((short) (topPlaneStart + sample));
-                    ib.put((short) (topPlaneStart + sample + 1));
+                    generatePlanes(ib, bottomPlaneStart, topPlaneStart, sample);
                 }
             }
         }
+        generatePoleTriangles(planes, radialSamples, insideView, vertCount, ib, index);
+        updateBound();
+    }
 
-        // pole triangles
+	private ShortBuffer allocateConnectivity(int planes, int radialSamples) {
+		int triCount = (planes - 2) * radialSamples * 2 + radialSamples;
+        ShortBuffer ib = BufferUtils.createShortBuffer(3 * triCount);
+		return ib;
+	}
+
+	private void generatePoleTriangles(int planes, int radialSamples, boolean insideView, 
+			int vertCount, ShortBuffer ib, int index) {
         int bottomPlaneStart = (planes - 2) * (radialSamples + 1);
         for (int samples = 0; samples < radialSamples; samples++, index += 3) {
             if (insideView){
@@ -313,9 +264,79 @@ public class Dome extends Mesh {
                 ib.put((short) (bottomPlaneStart + samples + 1));
             }
         }
+	}
 
-        updateBound();
-    }
+	private void generateDome(Vector3f center, int planes, int radialSamples, float radius, boolean insideView,
+			FloatBuffer vb, FloatBuffer nb, FloatBuffer tb, float fInvRS, float fYFactor, float[] afSin, float[] afCos,
+			Vector3f tempVc, Vector3f tempVb, Vector3f tempVa) {
+        int i = 0;
+        for (int iY = 0; iY < (planes - 1); iY++, i++) {
+            float fYFraction = fYFactor * iY; // in (0,1)
+            float fY = radius * fYFraction;
+            Vector3f kSliceCenter = computeSliceCenter(center, tempVb, fY);
+            float fSliceRadius = computeSliceRadius(radius, fY);
+
+            int iSave = i;
+            for (int iR = 0; iR < radialSamples; iR++, i++) {
+                computeSliceVertices(center, insideView, vb, nb, tb, fInvRS, afSin, afCos, tempVc, tempVa, i,
+						fYFraction, kSliceCenter, fSliceRadius, iR);
+            }
+            BufferUtils.copyInternalVector3(vb, iSave, i);
+            BufferUtils.copyInternalVector3(nb, iSave, i);
+            tb.put(1.0f).put(fYFraction);
+        }
+	}
+
+	private void computeSliceVertices(Vector3f center, boolean insideView, FloatBuffer vb, FloatBuffer nb,
+			FloatBuffer tb, float fInvRS, float[] afSin, float[] afCos, Vector3f tempVc, Vector3f tempVa, int i,
+			float fYFraction, Vector3f kSliceCenter, float fSliceRadius, int iR) {
+		Vector3f kNormal;
+		float fRadialFraction = iR * fInvRS; // in [0,1)
+		Vector3f kRadial = tempVc.set(afCos[iR], 0, afSin[iR]);
+		kRadial.mult(fSliceRadius, tempVa);
+		vb.put(kSliceCenter.x + tempVa.x).put(
+		        kSliceCenter.y + tempVa.y).put(
+		        kSliceCenter.z + tempVa.z);
+
+		BufferUtils.populateFromBuffer(tempVa, vb, i);
+		kNormal = tempVa.subtractLocal(center);
+		kNormal.normalizeLocal();
+		if (!insideView) {
+		    nb.put(kNormal.x).put(kNormal.y).put(kNormal.z);
+		} else {
+		    nb.put(-kNormal.x).put(-kNormal.y).put(-kNormal.z);
+		}
+		tb.put(fRadialFraction).put(fYFraction);
+	}
+
+	private float computeSliceRadius(float radius, float fY) {
+		float fSliceRadius = FastMath.sqrt(FastMath.abs(radius * radius - fY * fY));
+		return fSliceRadius;
+	}
+
+	private Vector3f computeSliceCenter(Vector3f center, Vector3f tempVb, float fY) {
+		Vector3f kSliceCenter = tempVb.set(center);
+		kSliceCenter.y += fY;
+		return kSliceCenter;
+	}
+
+	private void generatePlanes(ShortBuffer ib, int bottomPlaneStart, int topPlaneStart, int sample) {
+		ib.put((short) (bottomPlaneStart + sample));
+		ib.put((short) (topPlaneStart + sample));
+		ib.put((short) (bottomPlaneStart + sample + 1));
+		ib.put((short) (bottomPlaneStart + sample + 1));
+		ib.put((short) (topPlaneStart + sample));
+		ib.put((short) (topPlaneStart + sample + 1));
+	}
+
+	private void generatePlanesInsideView(ShortBuffer ib, int bottomPlaneStart, int topPlaneStart, int sample) {
+		ib.put((short) (bottomPlaneStart + sample));
+		ib.put((short) (bottomPlaneStart + sample + 1));
+		ib.put((short) (topPlaneStart + sample));
+		ib.put((short) (bottomPlaneStart + sample + 1));
+		ib.put((short) (topPlaneStart + sample + 1));
+		ib.put((short) (topPlaneStart + sample));
+	}
 
     @Override
     public void read(JmeImporter e) throws IOException {

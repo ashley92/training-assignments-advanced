@@ -31,6 +31,9 @@
  */
 package com.jme3.animation;
 
+import com.jme3.animation.movement.Animation;
+import com.jme3.animation.movement.Bone;
+import com.jme3.animation.movement.LoopMode;
 import com.jme3.math.FastMath;
 import com.jme3.util.TempVars;
 import java.util.BitSet;
@@ -99,7 +102,7 @@ public final class AnimChannel {
      * 
      * For more information, see the LoopMode enum class.
      * @see LoopMode
-     * @see AnimChannel#setLoopMode(com.jme3.animation.LoopMode)
+     * @see AnimChannel#setLoopMode(com.jme3.animation.movement.LoopMode)
      */
     public LoopMode getLoopMode() {
         return loopMode;
@@ -296,7 +299,7 @@ public final class AnimChannel {
         }
     }
 
-    BitSet getAffectedBones(){
+    public BitSet getAffectedBones(){
         return affectedBones;
     }
     

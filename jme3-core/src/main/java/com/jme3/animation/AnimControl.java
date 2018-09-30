@@ -31,6 +31,9 @@
  */
 package com.jme3.animation;
 
+import com.jme3.animation.movement.Animation;
+import com.jme3.animation.movement.Skeleton;
+import com.jme3.animation.movement.SkeletonControl;
 import com.jme3.export.*;
 import com.jme3.renderer.RenderManager;
 import com.jme3.renderer.ViewPort;

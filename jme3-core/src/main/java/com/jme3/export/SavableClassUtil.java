@@ -31,7 +31,7 @@
  */
 package com.jme3.export;
 
-import com.jme3.animation.Animation;
+import com.jme3.animation.movement.Animation;
 import com.jme3.effect.shapes.*;
 import com.jme3.material.MatParamTexture;
 import java.io.IOException;

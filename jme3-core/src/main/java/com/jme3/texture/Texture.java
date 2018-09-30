@@ -472,7 +472,7 @@ public abstract class Texture implements CloneableSmartAsset, Savable, Cloneable
             	this.wrapR = mode;
             	break;
             default:
-                throw new IllegalArgumentException("Not applicable for 2D textures");
+                throw new IllegalArgumentException("Not applicable for this type of texture");
         }
     }
     /**

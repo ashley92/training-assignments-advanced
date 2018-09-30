@@ -31,9 +31,11 @@
  */
 package com.jme3.animation;
 
-import static com.jme3.animation.LoopMode.Cycle;
-import static com.jme3.animation.LoopMode.DontLoop;
-import static com.jme3.animation.LoopMode.Loop;
+import static com.jme3.animation.movement.LoopMode.Cycle;
+import static com.jme3.animation.movement.LoopMode.DontLoop;
+import static com.jme3.animation.movement.LoopMode.Loop;
+
+import com.jme3.animation.movement.LoopMode;
 
 /**
  *

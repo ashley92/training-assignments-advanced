@@ -29,8 +29,12 @@
  * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package com.jme3.animation;
+package com.jme3.animation.movement;
 
+import com.jme3.animation.AnimChannel;
+import com.jme3.animation.AnimControl;
+import com.jme3.animation.tracks.ClonableTrack;
+import com.jme3.animation.tracks.Track;
 import com.jme3.export.*;
 import com.jme3.scene.Spatial;
 import com.jme3.util.SafeArrayList;
@@ -103,7 +107,7 @@ public class Animation implements Savable, Cloneable, JmeCloneable {
      * @param control the animation control
      * @param channel the animation channel
      */
-    void setTime(float time, float blendAmount, AnimControl control, AnimChannel channel, TempVars vars) {
+    public void setTime(float time, float blendAmount, AnimControl control, AnimChannel channel, TempVars vars) {
         if (tracks == null) {
             return;
         }
@@ -144,7 +148,7 @@ public class Animation implements Savable, Cloneable, JmeCloneable {
     }
 
     /**
-     * Returns the tracks set in {@link #setTracks(com.jme3.animation.Track[]) }.
+     * Returns the tracks set in {@link #setTracks(com.jme3.animation.tracks.Track[]) }.
      * 
      * @return the tracks set previously
      */

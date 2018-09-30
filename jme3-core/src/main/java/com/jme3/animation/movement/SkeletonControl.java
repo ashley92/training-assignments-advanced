@@ -29,8 +29,9 @@
  * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package com.jme3.animation;
+package com.jme3.animation.movement;
 
+import com.jme3.animation.AnimControl;
 import com.jme3.export.*;
 import com.jme3.material.MatParam;
 import com.jme3.material.Material;
